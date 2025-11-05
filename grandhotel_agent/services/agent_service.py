@@ -57,15 +57,37 @@ class AgentService:
         ]
 
         tools = types.Tool(function_declarations=tool_declarations)
-        config = types.GenerateContentConfig(tools=[tools])
+        # Provide system instruction to the model instead of concatenating into user content
+        inline_system = False
+        try:
+            config = types.GenerateContentConfig(
+                tools=[tools],
+                system_instruction=types.Part(text=self.system_prompt)
+            )
+        except TypeError:
+            # Fallback for older SDKs without system_instruction support
+            config = types.GenerateContentConfig(tools=[tools])
+            inline_system = True
 
         # Build initial content (system prompt + user message)
+        first_part_text = (
+            f"{self.system_prompt}\n\nUser: {user_message}" if inline_system else user_message
+        )
         contents = [
             types.Content(
                 role="user",
-                parts=[types.Part(text=f"{self.system_prompt}\n\nUser: {user_message}")]
+                parts=[types.Part(text=first_part_text)]
             )
         ]
+
+        # Simple internal lang detection (no external libs)
+        def _detect_lang_simple(text: str | None) -> str:
+            if not text:
+                return "pl-PL"
+            pl_chars = set("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ")
+            return "pl-PL" if any(ch in pl_chars for ch in text) else "en-US"
+
+        expected_lang = _detect_lang_simple(user_message)
 
         # Step 2: Call model
         response = self.client.models.generate_content(
@@ -124,7 +146,41 @@ class AgentService:
             )
 
             final_text = final_response.candidates[0].content.parts[0].text
+            reply_lang = _detect_lang_simple(final_text)
+            if reply_lang != expected_lang:
+                translate_prompt = (
+                    f"Translate the following assistant reply into {expected_lang} strictly. "
+                    f"Keep the original structure, bullet points, and formatting. "
+                    f"Output only the translated text without any extra commentary.\n\n" 
+                )
+                translate_contents = [
+                    types.Content(role="user", parts=[types.Part(text=translate_prompt + final_text)])
+                ]
+                translate_resp = self.client.models.generate_content(
+                    model=self.model,
+                    contents=translate_contents,
+                    config=config
+                )
+                final_text = translate_resp.candidates[0].content.parts[0].text
             return final_text, tool_traces
 
         # No function call - direct response
-        return first_part.text, tool_traces
+        final_text = first_part.text
+        # Language repair for direct response
+        reply_lang = _detect_lang_simple(final_text)
+        if reply_lang != expected_lang:
+            translate_prompt = (
+                f"Translate the following assistant reply into {expected_lang} strictly. "
+                f"Keep the original structure, bullet points, and formatting. "
+                f"Output only the translated text without any extra commentary.\n\n"
+            )
+            translate_contents = [
+                types.Content(role="user", parts=[types.Part(text=translate_prompt + final_text)])
+            ]
+            translate_resp = self.client.models.generate_content(
+                model=self.model,
+                contents=translate_contents,
+                config=config
+            )
+            final_text = translate_resp.candidates[0].content.parts[0].text
+        return final_text, tool_traces

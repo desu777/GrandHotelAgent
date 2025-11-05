@@ -23,6 +23,17 @@ async def health_check():
     return HealthResponse(status="ok", version="1.0.0")
 
 
+def _detect_language_simple(message: str | None) -> str:
+    """Very simple heuristic (no external libs): Polish if diacritics present, else en-US.
+
+    This avoids external detection libraries while keeping responses aligned with user language.
+    """
+    if not message:
+        return "pl-PL"
+    pl_chars = set("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ")
+    return "pl-PL" if any(ch in pl_chars for ch in message) else "en-US"
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
@@ -82,10 +93,12 @@ async def chat(
 
         # FC loop
         reply, tool_traces = await agent.chat(user_message, jwt)
+        # Detect language from the actual reply to avoid mismatch
+        detected_lang = _detect_language_simple(reply)
 
         return ChatResponse(
             sessionId=request.sessionId,
-            language="pl-PL",  # TODO: Auto-detect
+            language=detected_lang,
             reply=reply,
             audio=None,  # TODO: TTS when voiceMode=true
             toolTrace=tool_traces if tool_traces else None

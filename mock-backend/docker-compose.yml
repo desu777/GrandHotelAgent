@@ -19,3 +19,9 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
+    networks:
+      - grandhotel-network
+
+networks:
+  grandhotel-network:
+    external: true

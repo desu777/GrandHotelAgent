@@ -12,8 +12,8 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
 
-      # Backend URL - access mock-backend running on host
-      - BACKEND_URL=${BACKEND_URL:-http://host.docker.internal:8081}
+      # Backend URL - access mock-backend via shared Docker network
+      - BACKEND_URL=http://grandhotel-mock:8081
 
       # Redis connection (internal service)
       - REDIS_URL=redis://redis:6379/0
@@ -33,6 +33,7 @@ services:
     restart: unless-stopped
     networks:
       - agent-network
+      - grandhotel-network
 
   redis:
     image: redis:7-alpine
@@ -53,6 +54,8 @@ services:
 networks:
   agent-network:
     driver: bridge
+  grandhotel-network:
+    external: true
 
 volumes:
   redis-data:
