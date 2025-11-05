@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+README.md
+README_pl.md
+CLAUDE.md
+prompt.md
+GrandHotelBackend.md
+pllan_mock_backend.md
+agent_plan_1_move.md
+
+# Mock backend (separate service)
+mock-backend/
+
+# Tests
+tests/
+__tests__/
+*.test.py
+*.spec.py
+
+# Docker
+docker-compose.override.yml
+Dockerfile.dev

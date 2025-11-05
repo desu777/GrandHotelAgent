@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  agent:
+    build: .
+    image: grandhotel-agent:dev
+    container_name: grandhotel-agent
+    ports:
+      - "8000:8000"
+    environment:
+      # Gemini API key from .env file
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+
+      # Backend URL - access mock-backend running on host
+      - BACKEND_URL=${BACKEND_URL:-http://host.docker.internal:8081}
+
+      # Redis connection (internal service)
+      - REDIS_URL=redis://redis:6379/0
+      - SESSION_TTL_MIN=${SESSION_TTL_MIN:-60}
+
+      # Rate limiting
+      - RATE_LIMIT_PER_MIN=${RATE_LIMIT_PER_MIN:-30}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/agent/health')\" || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - agent-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: grandhotel-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - agent-network
+    volumes:
+      - redis-data:/data
+
+networks:
+  agent-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local

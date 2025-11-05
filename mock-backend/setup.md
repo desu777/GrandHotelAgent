@@ -1,6 +1,6 @@
-1. docker-compose up --build
+docker-compose up --build
 -> zbudowanie obrazu 
 
-2. docker-compose up 
+docker-compose up 
 -> kolejne uruchomienia 
 
