@@ -1,0 +1,152 @@
+[
+  {
+    "id": 1,
+    "name": "Bruschetta",
+    "description": "Toasted bread with fresh tomatoes, garlic, basil and olive oil",
+    "price": 8.99
+  },
+  {
+    "id": 2,
+    "name": "Beef Carpaccio",
+    "description": "Thinly sliced raw beef with arugula, parmesan and truffle oil",
+    "price": 14.99
+  },
+  {
+    "id": 3,
+    "name": "Shrimp Cocktail",
+    "description": "Chilled jumbo shrimp served with cocktail sauce and lemon",
+    "price": 16.99
+  },
+  {
+    "id": 4,
+    "name": "French Onion Soup",
+    "description": "Classic onion soup with gruyere cheese and crispy croutons",
+    "price": 9.99
+  },
+  {
+    "id": 5,
+    "name": "Lobster Bisque",
+    "description": "Creamy lobster soup with cognac and herbs",
+    "price": 18.99
+  },
+  {
+    "id": 6,
+    "name": "Tom Yum Soup",
+    "description": "Spicy Thai soup with shrimp, lemongrass and lime",
+    "price": 11.99
+  },
+  {
+    "id": 7,
+    "name": "Caesar Salad",
+    "description": "Classic Caesar with crispy croutons and parmesan cheese",
+    "price": 12.99
+  },
+  {
+    "id": 8,
+    "name": "Greek Salad",
+    "description": "Fresh vegetables with feta cheese, olives and oregano",
+    "price": 11.99
+  },
+  {
+    "id": 9,
+    "name": "Caprese Salad",
+    "description": "Fresh mozzarella, tomatoes and basil with balsamic glaze",
+    "price": 13.99
+  },
+  {
+    "id": 10,
+    "name": "Grilled Salmon",
+    "description": "Fresh Atlantic salmon served with roasted vegetables and lemon sauce",
+    "price": 24.99
+  },
+  {
+    "id": 11,
+    "name": "Beef Tenderloin",
+    "description": "Premium beef tenderloin with truffle mashed potatoes",
+    "price": 34.99
+  },
+  {
+    "id": 12,
+    "name": "Duck Confit",
+    "description": "Slow-cooked duck leg with orange sauce and roasted vegetables",
+    "price": 28.99
+  },
+  {
+    "id": 13,
+    "name": "Lamb Chops",
+    "description": "Grilled lamb chops with rosemary, garlic and mint sauce",
+    "price": 32.99
+  },
+  {
+    "id": 14,
+    "name": "Chicken Parmesan",
+    "description": "Breaded chicken breast with marinara sauce and melted mozzarella",
+    "price": 22.99
+  },
+  {
+    "id": 15,
+    "name": "Seafood Paella",
+    "description": "Spanish rice dish with shrimp, mussels, calamari and saffron",
+    "price": 29.99
+  },
+  {
+    "id": 16,
+    "name": "Vegetarian Curry",
+    "description": "Thai red curry with vegetables, tofu and coconut milk",
+    "price": 19.99
+  },
+  {
+    "id": 17,
+    "name": "Vegetable Risotto",
+    "description": "Arborio rice with seasonal vegetables and parmesan",
+    "price": 19.99
+  },
+  {
+    "id": 18,
+    "name": "Margherita Pizza",
+    "description": "Traditional Italian pizza with mozzarella and fresh basil",
+    "price": 16.99
+  },
+  {
+    "id": 19,
+    "name": "Sushi Platter",
+    "description": "Assorted nigiri and maki rolls with wasabi and ginger",
+    "price": 38.99
+  },
+  {
+    "id": 20,
+    "name": "Tiramisu",
+    "description": "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone",
+    "price": 9.99
+  },
+  {
+    "id": 21,
+    "name": "Chocolate Lava Cake",
+    "description": "Warm chocolate cake with molten center and vanilla ice cream",
+    "price": 8.99
+  },
+  {
+    "id": 22,
+    "name": "Crème Brûlée",
+    "description": "French vanilla custard with caramelized sugar crust",
+    "price": 10.99
+  },
+  {
+    "id": 23,
+    "name": "Panna Cotta",
+    "description": "Italian cream dessert with berry compote",
+    "price": 9.99
+  },
+  {
+    "id": 24,
+    "name": "Apple Tart",
+    "description": "Classic French tart with caramelized apples and vanilla ice cream",
+    "price": 11.99
+  },
+  {
+    "id": 25,
+    "name": "Fresh Juice Selection",
+    "description": "Orange, grapefruit, pineapple or mixed berry juice",
+    "price": 6.99
+  }
+]

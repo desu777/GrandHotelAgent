@@ -1,0 +1,92 @@
+[
+  {
+    "roomType": "Budget Room",
+    "pricePerNight": 80,
+    "capacity": 1,
+    "amenities": ["WiFi", "TV"]
+  },
+  {
+    "roomType": "Single Room",
+    "pricePerNight": 95,
+    "capacity": 1,
+    "amenities": ["WiFi", "Air Conditioning", "TV", "Work Desk"]
+  },
+  {
+    "roomType": "Standard Room",
+    "pricePerNight": 120,
+    "capacity": 2,
+    "amenities": ["WiFi", "Air Conditioning", "TV"]
+  },
+  {
+    "roomType": "Garden View Room",
+    "pricePerNight": 140,
+    "capacity": 2,
+    "amenities": ["WiFi", "Air Conditioning", "TV", "Garden View", "Mini Bar"]
+  },
+  {
+    "roomType": "Superior Room",
+    "pricePerNight": 160,
+    "capacity": 2,
+    "amenities": ["WiFi", "Air Conditioning", "TV", "Balcony", "Mini Bar", "Coffee Machine"]
+  },
+  {
+    "roomType": "Executive Room",
+    "pricePerNight": 180,
+    "capacity": 2,
+    "amenities": ["WiFi", "Air Conditioning", "TV", "Work Desk", "Coffee Machine", "Safe"]
+  },
+  {
+    "roomType": "Studio Apartment",
+    "pricePerNight": 200,
+    "capacity": 3,
+    "amenities": ["WiFi", "Air Conditioning", "TV", "Kitchenette", "Dining Area"]
+  },
+  {
+    "roomType": "Deluxe Suite",
+    "pricePerNight": 220,
+    "capacity": 3,
+    "amenities": ["WiFi", "Air Conditioning", "Balcony", "TV", "Mini Bar", "Bath Robes"]
+  },
+  {
+    "roomType": "Junior Suite",
+    "pricePerNight": 240,
+    "capacity": 3,
+    "amenities": ["WiFi", "Air Conditioning", "Balcony", "TV", "Mini Bar", "Separate Living Area"]
+  },
+  {
+    "roomType": "Business Suite",
+    "pricePerNight": 280,
+    "capacity": 2,
+    "amenities": ["WiFi", "Air Conditioning", "TV", "Work Desk", "Meeting Area", "Printer", "Coffee Machine"]
+  },
+  {
+    "roomType": "Family Suite",
+    "pricePerNight": 350,
+    "capacity": 5,
+    "amenities": ["WiFi", "Air Conditioning", "Balcony", "TV", "Mini Bar", "Kitchen", "2 Bedrooms"]
+  },
+  {
+    "roomType": "Honeymoon Suite",
+    "pricePerNight": 380,
+    "capacity": 2,
+    "amenities": ["WiFi", "Air Conditioning", "Balcony", "TV", "Mini Bar", "Jacuzzi", "Ocean View", "Champagne"]
+  },
+  {
+    "roomType": "Penthouse",
+    "pricePerNight": 500,
+    "capacity": 4,
+    "amenities": ["WiFi", "Air Conditioning", "Balcony", "TV", "Mini Bar", "Jacuzzi", "Sea View", "Private Terrace"]
+  },
+  {
+    "roomType": "Presidential Suite",
+    "pricePerNight": 1200,
+    "capacity": 6,
+    "amenities": ["WiFi", "Air Conditioning", "Multiple Balconies", "TV", "Full Bar", "Jacuzzi", "Sea View", "Private Pool", "Butler Service", "3 Bedrooms"]
+  },
+  {
+    "roomType": "Royal Penthouse",
+    "pricePerNight": 1500,
+    "capacity": 8,
+    "amenities": ["WiFi", "Air Conditioning", "Panoramic View", "Multiple TVs", "Full Bar", "Spa", "Private Pool", "Butler Service", "Private Gym", "4 Bedrooms", "Grand Piano"]
+  }
+]
