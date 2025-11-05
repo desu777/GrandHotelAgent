@@ -10,6 +10,7 @@ load_dotenv()
 # Gemini API
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL_LANG = os.getenv("GEMINI_MODEL_LANG", "gemini-2.5-flash-lite")
 
 # Backend API
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8081")

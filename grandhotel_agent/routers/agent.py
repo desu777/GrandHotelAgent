@@ -6,6 +6,7 @@ from fastapi import APIRouter, Header, HTTPException
 from grandhotel_agent.models.requests import ChatRequest
 from grandhotel_agent.models.responses import ChatResponse, HealthResponse, ErrorResponse
 from grandhotel_agent.services.agent_service import AgentService
+from grandhotel_agent.services.lang_service import detect_language_bcp47
 from grandhotel_agent.services.redis_store import get_session_store
 
 
@@ -23,15 +24,7 @@ async def health_check():
     return HealthResponse(status="ok", version="1.0.0")
 
 
-def _detect_language_simple(message: str | None) -> str:
-    """Very simple heuristic (no external libs): Polish if diacritics present, else en-US.
-
-    This avoids external detection libraries while keeping responses aligned with user language.
-    """
-    if not message:
-        return "pl-PL"
-    pl_chars = set("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ")
-    return "pl-PL" if any(ch in pl_chars for ch in message) else "en-US"
+# Removed static heuristics; language detection handled by LLM pre-flight
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -91,14 +84,16 @@ async def chat(
         # Use text message (audio not implemented yet - TODO)
         user_message = request.message or "[Audio input - transcription TODO]"
 
+        # Pre-flight LLM language detection (BCP-47) using lite model
+        # If message is missing (voice only path not yet implemented), use safe default.
+        language_code = await detect_language_bcp47(request.message) if request.message else "en-US"
+
         # FC loop
-        reply, tool_traces = await agent.chat(user_message, jwt)
-        # Detect language from the actual reply to avoid mismatch
-        detected_lang = _detect_language_simple(reply)
+        reply, tool_traces = await agent.chat(user_message, jwt, language_code)
 
         return ChatResponse(
             sessionId=request.sessionId,
-            language=detected_lang,
+            language=language_code,
             reply=reply,
             audio=None,  # TODO: TTS when voiceMode=true
             toolTrace=tool_traces if tool_traces else None

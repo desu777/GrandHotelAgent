@@ -24,7 +24,7 @@ class ChatResponse(BaseModel):
     POST /agent/chat response body (200 OK).
     """
     sessionId: str = Field(..., description="Session UUID v4")
-    language: str = Field(default="pl-PL", description="Detected language")
+    language: str = Field(..., description="Detected language (BCP-47)")
     reply: str = Field(..., description="Agent's text response")
     audio: Optional[AudioOutput] = Field(None, description="TTS audio (if voiceMode=true)")
     toolTrace: Optional[List[ToolTrace]] = Field(None, description="Tool execution trace")

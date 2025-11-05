@@ -11,6 +11,7 @@ services:
       # Gemini API key from .env file
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - GEMINI_MODEL_LANG=${GEMINI_MODEL_LANG:-gemini-2.5-flash-lite}
 
       # Backend URL - access mock-backend via shared Docker network
       - BACKEND_URL=http://grandhotel-mock:8081
