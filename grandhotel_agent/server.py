@@ -5,6 +5,11 @@ Main entry point for the service.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from grandhotel_agent.routers import agent
+from grandhotel_agent.logging_config import setup_logging, get_logger
+
+# Configure logging FIRST (before app creation)
+setup_logging()
+logger = get_logger(__name__)
 
 
 # Create FastAPI app
@@ -35,14 +40,18 @@ app.include_router(agent.router)
 @app.on_event("startup")
 async def startup_event():
     """Log startup information"""
-    print("=" * 60)
-    print("GrandHotel Agent API - Starting")
-    print("=" * 60)
-    print("Endpoints:")
-    print("  POST /agent/chat - Main chat endpoint")
-    print("  GET  /agent/health - Health check")
-    print("  GET  /docs - Swagger UI")
-    print("=" * 60)
+    logger.info(
+        "GrandHotel Agent API starting",
+        extra={
+            "event": "startup",
+            "version": "1.0.0",
+            "endpoints": [
+                "POST /agent/chat - Main chat endpoint",
+                "GET /agent/health - Health check",
+                "GET /docs - Swagger UI"
+            ]
+        }
+    )
 
 
 # Shutdown event
@@ -52,7 +61,7 @@ async def shutdown_event():
     from grandhotel_agent.services.redis_store import _store
     if _store:
         await _store.disconnect()
-    print("GrandHotel Agent API - Stopped")
+    logger.info("GrandHotel Agent API stopped", extra={"event": "shutdown"})
 
 
 # Root endpoint

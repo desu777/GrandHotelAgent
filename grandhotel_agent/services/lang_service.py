@@ -5,6 +5,9 @@ Returns strict BCP-47 language code for a given text input.
 from google import genai
 from google.genai import types
 from grandhotel_agent.config import GOOGLE_API_KEY, GEMINI_MODEL_LANG
+from grandhotel_agent.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 async def detect_language_bcp47(text: str | None) -> str:
@@ -37,7 +40,10 @@ async def detect_language_bcp47(text: str | None) -> str:
 
         # Safe access to response with error handling
         if not resp.candidates or not resp.candidates[0].content.parts:
-            print("[Lang] No valid response from language detection model")
+            logger.warning(
+                "Language detection: no valid response from model",
+                extra={"component": "lang", "fallback": "en-US"}
+            )
             return "en-US"
 
         code = resp.candidates[0].content.parts[0].text.strip()
@@ -46,10 +52,17 @@ async def detect_language_bcp47(text: str | None) -> str:
         if 2 <= len(code) <= 8 and " " not in code and "\n" not in code:
             return code
 
-        print(f"[Lang] Invalid language code format: {code}")
+        logger.warning(
+            "Language detection: invalid code format",
+            extra={"component": "lang", "code": code, "fallback": "en-US"}
+        )
         return "en-US"
 
     except Exception as e:
-        print(f"[Lang] Language detection error: {e}")
+        logger.error(
+            "Language detection error",
+            exc_info=True,
+            extra={"component": "lang", "fallback": "en-US"}
+        )
         return "en-US"  # Safe fallback
 

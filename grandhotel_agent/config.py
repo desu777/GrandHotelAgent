@@ -22,3 +22,7 @@ SESSION_MAX_MESSAGES = int(os.getenv("SESSION_MAX_MESSAGES", "30"))
 
 # Rate limiting
 RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "30"))
+
+# Logging
+APP_ENV = os.getenv("APP_ENV", "development")  # development / production
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG" if APP_ENV == "development" else "INFO")

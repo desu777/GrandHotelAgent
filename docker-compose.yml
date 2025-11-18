@@ -22,6 +22,10 @@ services:
 
       # Rate limiting
       - RATE_LIMIT_PER_MIN=${RATE_LIMIT_PER_MIN:-30}
+
+      # Logging
+      - APP_ENV=${APP_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
     depends_on:
       redis:
         condition: service_healthy

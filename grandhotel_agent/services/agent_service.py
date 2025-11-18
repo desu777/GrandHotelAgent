@@ -6,9 +6,12 @@ import time
 from pathlib import Path
 from google import genai
 from google.genai import types
-from grandhotel_agent.config import GOOGLE_API_KEY, GEMINI_MODEL
+from grandhotel_agent.config import GOOGLE_API_KEY, GEMINI_MODEL, APP_ENV
 from grandhotel_agent.tools.rooms import AVAILABLE_TOOLS
 from grandhotel_agent.models.responses import ToolTrace
+from grandhotel_agent.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class AgentService:
@@ -138,8 +141,15 @@ class AgentService:
                 text_parts.append(part.text)
 
         if func_call:
+            # Log tool invocation (args only in dev mode to avoid sensitive data exposure)
+            extra_log = {
+                "component": "fc",
+                "tool": func_call.name
+            }
+            if APP_ENV == "development":
+                extra_log["args"] = dict(func_call.args)
 
-            print(f"[FC] Tool called: {func_call.name} with args: {dict(func_call.args)}")
+            logger.info("Function calling: tool invoked", extra=extra_log)
 
             # Step 4: Execute function
             start_time = time.time()
@@ -153,7 +163,11 @@ class AgentService:
                 status = "OK"
 
             except Exception as e:
-                print(f"[FC] Error executing {func_call.name}: {e}")
+                logger.error(
+                    "Function calling: tool execution failed",
+                    exc_info=True,
+                    extra={"component": "fc", "tool": func_call.name}
+                )
                 result = {"error": str(e)}
                 status = "ERROR"
 

@@ -149,3 +149,88 @@ Upstream TTS request (non‑stream)
 Config & privacy
 - `ELEVENLABS_API_KEY` (secret), `VOICE_ID_DEFAULT` (optional per‑language voice mapping)
 - Generated audio is not persisted or logged; only final text is stored per normal logging rules.
+
+## 9) Logging
+
+GrandHotel Agent uses structured logging with different formats for development and production environments.
+
+### Configuration
+
+- **`APP_ENV`** — Environment mode (`development` / `production`)
+  - **development**: Human-readable text format, `DEBUG` level, detailed traces for all operations
+  - **production**: JSON format, `INFO` level, structured logs optimized for log aggregation systems (ELK, Loki, CloudWatch, Datadog)
+
+- **`LOG_LEVEL`** — Optional override for log level (`DEBUG` / `INFO` / `WARNING` / `ERROR`)
+  - Defaults to `DEBUG` in development, `INFO` in production
+  - Can be set explicitly to override environment-based defaults
+
+### Log Output
+
+All logs are written to **stdout** for Docker compatibility. Use your container orchestration platform to collect and aggregate logs.
+
+### Context Enrichment
+
+Every log automatically includes:
+- **sessionId** — User session UUID (from `ChatRequest.sessionId`)
+- **traceId** — Optional client trace ID (from `ChatRequest.client.traceId`)
+- **component** — Service layer (router, agent, fc, lang, redis, tool)
+- **timestamp** — ISO8601 UTC timestamp
+- **level** — Log severity level
+
+### Example Log Output
+
+**Development (text format):**
+```
+2025-11-18 14:32:01 | INFO     | grandhotel_agent.routers.agent | Request: POST /agent/chat | session=abc12345 trace=xyz78901
+2025-11-18 14:32:02 | INFO     | grandhotel_agent.services.agent_service | Function calling: tool invoked | session=abc12345 trace=xyz78901
+2025-11-18 14:32:02 | DEBUG    | grandhotel_agent.tools.rooms | Backend API call: rooms_list | session=abc12345
+```
+
+**Production (JSON format):**
+```json
+{
+  "timestamp": "2025-11-18T14:32:01.123Z",
+  "level": "INFO",
+  "service": "grandhotel-agent",
+  "component": "router",
+  "message": "Request: POST /agent/chat",
+  "sessionId": "abc12345-uuid-v4",
+  "traceId": "xyz78901",
+  "endpoint": "/agent/chat",
+  "voice_mode": false
+}
+```
+
+### Privacy & Security
+
+- **User messages are NEVER logged** in production (GDPR/privacy compliance)
+- Only metadata is logged: sessionId, traceId, language codes, tool names, durations, error types
+- Function calling arguments logged only in development mode
+- Sensitive backend responses are not included in logs
+
+### Log Levels by Component
+
+| Component | DEBUG | INFO | WARNING | ERROR |
+|-----------|-------|------|---------|-------|
+| **router** | Request details | Request start/success | — | Agent failures, validation errors |
+| **agent (FC)** | Tool arguments (dev only) | Tool invocations | — | Tool execution failures, model errors |
+| **lang** | Detected language codes | — | Invalid format, fallbacks | API errors |
+| **redis** | — | — | Connection failures (non-blocking) | Critical session errors |
+| **tool** | Backend calls, response counts | — | — | HTTP errors, timeouts |
+
+### Switching Environments
+
+**Local development:**
+```bash
+APP_ENV=development docker-compose up
+```
+
+**Production deployment:**
+```bash
+APP_ENV=production LOG_LEVEL=INFO docker-compose up
+```
+
+**Debugging in production** (temporary):
+```bash
+APP_ENV=production LOG_LEVEL=DEBUG docker-compose up
+```

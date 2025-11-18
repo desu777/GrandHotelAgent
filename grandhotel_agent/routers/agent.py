@@ -10,8 +10,10 @@ from grandhotel_agent.services.agent_service import AgentService
 from grandhotel_agent.services.lang_service import detect_language_bcp47
 from grandhotel_agent.services.redis_store import get_session_store
 from grandhotel_agent.config import SESSION_MAX_MESSAGES
+from grandhotel_agent.logging_config import get_logger
+from grandhotel_agent.middleware import set_logging_context
 
-
+logger = get_logger(__name__)
 router = APIRouter(prefix="/agent", tags=["agent"])
 
 
@@ -55,6 +57,24 @@ async def chat(
         HTTPException 400: Invalid request
         HTTPException 500: Internal error
     """
+    # Set logging context for all logs in this request
+    set_logging_context(
+        session_id=request.sessionId,
+        trace_id=request.client.traceId if request.client else None
+    )
+
+    # Log incoming request
+    logger.info(
+        "Request: POST /agent/chat",
+        extra={
+            "component": "router",
+            "endpoint": "/agent/chat",
+            "voice_mode": request.voiceMode,
+            "has_message": bool(request.message),
+            "has_audio": bool(request.audio)
+        }
+    )
+
     # Validate: at least message or audio required
     if not request.message and not request.audio:
         raise HTTPException(
@@ -98,7 +118,11 @@ async def chat(
             }
 
     except Exception as e:
-        print(f"[Redis] Error loading session: {e}")
+        logger.warning(
+            "Redis session load failed, degrading gracefully",
+            exc_info=True,
+            extra={"component": "redis", "operation": "load_session"}
+        )
         # Continue without Redis (graceful degradation)
         store = None
         session = None
@@ -152,8 +176,22 @@ async def chat(
                 await store.set(request.sessionId, session)
 
             except Exception as e:
-                print(f"[Redis] Error saving session history: {e}")
+                logger.warning(
+                    "Redis session save failed",
+                    exc_info=True,
+                    extra={"component": "redis", "operation": "save_session"}
+                )
                 # Non-blocking - continue with response
+
+        # Log successful response
+        logger.info(
+            "Response: POST /agent/chat success",
+            extra={
+                "component": "router",
+                "language": language_code,
+                "has_tool_trace": bool(tool_traces)
+            }
+        )
 
         return ChatResponse(
             sessionId=request.sessionId,
@@ -164,7 +202,11 @@ async def chat(
         )
 
     except Exception as e:
-        print(f"[Agent] Error: {e}")
+        logger.error(
+            "Agent error",
+            exc_info=True,
+            extra={"component": "router", "endpoint": "/agent/chat"}
+        )
         raise HTTPException(
             status_code=500,
             detail={
