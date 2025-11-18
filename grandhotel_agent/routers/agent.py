@@ -2,12 +2,14 @@
 Agent endpoints: POST /agent/chat + GET /agent/health
 Based on README.md specification.
 """
+from datetime import datetime, timezone
 from fastapi import APIRouter, Header, HTTPException
 from grandhotel_agent.models.requests import ChatRequest
 from grandhotel_agent.models.responses import ChatResponse, HealthResponse, ErrorResponse
 from grandhotel_agent.services.agent_service import AgentService
 from grandhotel_agent.services.lang_service import detect_language_bcp47
 from grandhotel_agent.services.redis_store import get_session_store
+from grandhotel_agent.config import SESSION_MAX_MESSAGES
 
 
 router = APIRouter(prefix="/agent", tags=["agent"])
@@ -69,13 +71,39 @@ async def chat(
     if authorization and authorization.startswith("Bearer "):
         jwt = authorization[7:]  
 
-    # Touch Redis session 
+    # Load session from Redis (conversation history + language)
+    store = None
+    session = None
+    history = []
+    language_code = None
+
     try:
         store = await get_session_store()
-        await store.touch(request.sessionId)
+        session = await store.get(request.sessionId)
+
+        if session:
+            # Extract history (defensive)
+            history = session.get("messages", [])
+            if not isinstance(history, list):
+                history = []
+
+            # Reuse language from session if available
+            language_code = session.get("language")
+        else:
+            # New session - will be created on first save
+            session = {
+                "createdAt": datetime.now(timezone.utc).isoformat(),
+                "messages": [],
+                "language": None
+            }
+
     except Exception as e:
-        print(f"[Redis] Error touching session: {e}")
-        # Continue without Redis (non-blocking)
+        print(f"[Redis] Error loading session: {e}")
+        # Continue without Redis (graceful degradation)
+        store = None
+        session = None
+        history = []
+        language_code = None
 
     # Process with agent service
     try:
@@ -84,12 +112,48 @@ async def chat(
         # Use text message (audio not implemented yet - TODO)
         user_message = request.message or "[Audio input - transcription TODO]"
 
-        # Pre-flight LLM language detection (BCP-47) using lite model
-        # If message is missing (voice only path not yet implemented), use safe default.
-        language_code = await detect_language_bcp47(request.message) if request.message else "en-US"
+        # Detect language only if not in session
+        if not language_code:
+            language_code = await detect_language_bcp47(request.message) if request.message else "en-US"
+            # Save detected language to session
+            if session is not None:
+                session["language"] = language_code
 
-        # FC loop
-        reply, tool_traces = await agent.chat(user_message, jwt, language_code)
+        # FC loop with conversation history
+        reply, tool_traces = await agent.chat(user_message, jwt, language_code, history=history)
+
+        # Update session with new messages
+        if store and session is not None:
+            try:
+                now_iso = datetime.now(timezone.utc).isoformat()
+
+                # Append new messages to history
+                new_messages = [
+                    {"role": "user", "content": user_message, "ts": now_iso},
+                    {"role": "assistant", "content": reply, "ts": now_iso}
+                ]
+
+                # Get current history and append
+                current_messages = session.get("messages", [])
+                if not isinstance(current_messages, list):
+                    current_messages = []
+
+                updated_messages = current_messages + new_messages
+
+                # Trim to SESSION_MAX_MESSAGES
+                if len(updated_messages) > SESSION_MAX_MESSAGES:
+                    updated_messages = updated_messages[-SESSION_MAX_MESSAGES:]
+
+                # Update session
+                session["messages"] = updated_messages
+                session["language"] = language_code
+
+                # Save to Redis
+                await store.set(request.sessionId, session)
+
+            except Exception as e:
+                print(f"[Redis] Error saving session history: {e}")
+                # Non-blocking - continue with response
 
         return ChatResponse(
             sessionId=request.sessionId,

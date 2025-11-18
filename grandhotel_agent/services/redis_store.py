@@ -3,6 +3,7 @@ Redis session store with sliding TTL.
 Sessions auto-expire after 60 minutes of inactivity.
 """
 import json
+from datetime import datetime, timezone
 from typing import Optional
 import redis.asyncio as redis
 from grandhotel_agent.config import REDIS_URL, SESSION_TTL_MIN
@@ -76,8 +77,12 @@ class SessionStore:
         session = await self.get(session_id)
 
         if session is None:
-            # Auto-create session
-            await self.set(session_id, {"created": True})
+            # Auto-create session with conversation history structure
+            await self.set(session_id, {
+                "createdAt": datetime.now(timezone.utc).isoformat(),
+                "messages": [],
+                "language": None
+            })
         # TTL already refreshed by get()
 
 

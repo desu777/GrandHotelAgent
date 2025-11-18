@@ -38,6 +38,7 @@ class AgentService:
         user_message: str,
         jwt: str | None = None,
         language_code: str | None = None,
+        history: list[dict] | None = None,
     ) -> tuple[str, list[ToolTrace]]:
         """
         Process user message with FC loop.
@@ -45,6 +46,11 @@ class AgentService:
         Args:
             user_message: User's text input
             jwt: Optional JWT token for backend calls
+            language_code: BCP-47 language code for response
+            history: Optional conversation history as list of dicts with keys:
+                     - "role": "user" | "assistant"
+                     - "content": str
+                     - "ts": str (ISO8601, optional)
 
         Returns:
             tuple: (final_reply, tool_traces)
@@ -78,13 +84,39 @@ class AgentService:
             )
         )
 
-        # Build initial content (just user message, system is in config)
-        contents = [
+        # Build contents list starting with conversation history
+        contents: list[types.Content] = []
+
+        # Add conversation history if available
+        if history:
+            for msg in history:
+                # Validate message structure
+                if not isinstance(msg, dict) or "content" not in msg or "role" not in msg:
+                    continue  # Skip invalid entries
+
+                role = msg["role"]
+                content_text = msg["content"]
+
+                # Map 'assistant' to 'model' for Gemini API
+                if role == "assistant":
+                    role = "model"
+                elif role != "user":
+                    continue  # Skip unknown roles
+
+                contents.append(
+                    types.Content(
+                        role=role,
+                        parts=[types.Part(text=content_text)]
+                    )
+                )
+
+        # Add current user message (always last)
+        contents.append(
             types.Content(
                 role="user",
                 parts=[types.Part(text=user_message)]
             )
-        ]
+        )
 
         # Step 2: Call model
         response = self.client.models.generate_content(
@@ -93,7 +125,7 @@ class AgentService:
             config=config
         )
 
-        # Step 3: Check for function_call in ALL parts (not just first)
+        # Step 3: Check for function_call in ALL parts 
         # Model may generate text before function_call
         func_call = None
         text_parts = []
@@ -101,7 +133,7 @@ class AgentService:
         for part in response.candidates[0].content.parts:
             if hasattr(part, 'function_call') and part.function_call:
                 func_call = part.function_call
-                break  # Take first function_call found
+                break  
             elif hasattr(part, 'text'):
                 text_parts.append(part.text)
 
