@@ -7,7 +7,7 @@ from pathlib import Path
 from google import genai
 from google.genai import types
 from grandhotel_agent.config import GOOGLE_API_KEY, GEMINI_MODEL, APP_ENV
-from grandhotel_agent.tools.rooms import AVAILABLE_TOOLS
+from grandhotel_agent.tools import AVAILABLE_TOOLS
 from grandhotel_agent.models.responses import ToolTrace
 from grandhotel_agent.logging_config import get_logger
 
@@ -147,7 +147,7 @@ class AgentService:
                 "tool": func_call.name
             }
             if APP_ENV == "development":
-                extra_log["args"] = dict(func_call.args)
+                extra_log["tool_args"] = dict(func_call.args)
 
             logger.info("Function calling: tool invoked", extra=extra_log)
 
