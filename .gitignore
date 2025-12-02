@@ -50,3 +50,7 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+.cursor/
+AGENTS.md
+CLAUDE.md

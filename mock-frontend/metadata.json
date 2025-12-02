@@ -1,0 +1,5 @@
+{
+  "name": "GPT-Like UI Template",
+  "description": "A 1:1 recreation of the chat interface template using React, Tailwind CSS, and TypeScript, featuring a dark mode aesthetic.",
+  "requestFramePermissions": []
+}
