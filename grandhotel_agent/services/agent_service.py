@@ -151,25 +151,30 @@ class AgentService:
 
     async def chat(
         self,
-        user_message: str,
+        user_message: str | None,
         jwt: str | None = None,
         language_code: str | None = None,
         history: list[dict] | None = None,
-    ) -> tuple[str, list[ToolTrace]]:
+        audio_bytes: bytes | None = None,
+        audio_mime_type: str | None = None,
+    ) -> tuple[str, list[ToolTrace], str | None]:
         """
-        Process user message with FC loop.
+        Process user message with FC loop. Supports text and/or audio input.
 
         Args:
-            user_message: User's text input
+            user_message: User's text input (optional if audio provided)
             jwt: Optional JWT token for backend calls
             language_code: BCP-47 language code for response
             history: Optional conversation history as list of dicts with keys:
                      - "role": "user" | "assistant"
                      - "content": str
                      - "ts": str (ISO8601, optional)
+            audio_bytes: Raw audio data (WebM/Opus, WAV, MP3)
+            audio_mime_type: MIME type of audio (e.g. "audio/webm")
 
         Returns:
-            tuple: (final_reply, tool_traces)
+            tuple: (final_reply, tool_traces, transcription)
+            - transcription: extracted text from audio input (if audio was provided)
         """
         tool_traces = []
 
@@ -235,22 +240,48 @@ class AgentService:
                     )
                 )
 
-        # Add current user message (always last)
-        contents.append(
-            types.Content(
-                role="user",
-                parts=[types.Part(text=user_message)]
+        # Add current user input (text and/or audio)
+        user_parts: list[types.Part] = []
+
+        # Audio input (multimodal)
+        if audio_bytes and audio_mime_type:
+            logger.debug(
+                "Adding audio input to request",
+                extra={
+                    "component": "agent",
+                    "audio_size_bytes": len(audio_bytes),
+                    "mime_type": audio_mime_type,
+                }
             )
-        )
+            audio_part = types.Part.from_bytes(
+                mime_type=audio_mime_type,
+                data=audio_bytes,
+            )
+            user_parts.append(audio_part)
+
+        # Text input (or hint alongside audio)
+        if user_message:
+            user_parts.append(types.Part(text=user_message))
+
+        if user_parts:
+            contents.append(
+                types.Content(
+                    role="user",
+                    parts=user_parts,
+                )
+            )
 
         # Step 2: Call model with retry logic for transient empty responses
         response, func_call, text_parts, error_msg = await _generate_with_retry(
             self.client, self.model, contents, config
         )
 
+        # Track transcription from audio input
+        transcription: str | None = None
+
         # Handle definitive errors (safety block, prompt block)
         if error_msg and not func_call and not text_parts:
-            return error_msg, tool_traces
+            return error_msg, tool_traces, transcription
 
         # Step 3: Handle function call if present
         if func_call:
@@ -310,11 +341,23 @@ class AgentService:
             )
 
             if final_error:
-                return final_error, tool_traces
+                return final_error, tool_traces, transcription
 
             final_text = ' '.join(final_text_parts) if final_text_parts else "Przepraszam, nie udało się przetworzyć odpowiedzi."
-            return final_text, tool_traces
+
+            # Extract transcription for audio input (from first response text)
+            if audio_bytes and text_parts:
+                # When audio is provided, model often includes transcription in initial response
+                # We save it for history persistence
+                transcription = ' '.join(text_parts)
+
+            return final_text, tool_traces, transcription
 
         # No function call - direct response
         final_text = ' '.join(text_parts) if text_parts else "Przepraszam, nie udało się uzyskać odpowiedzi."
-        return final_text, tool_traces
+
+        # For audio-only input without FC, the text response often includes transcription
+        if audio_bytes and not user_message and text_parts:
+            transcription = final_text
+
+        return final_text, tool_traces, transcription

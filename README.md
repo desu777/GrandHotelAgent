@@ -139,7 +139,7 @@ Accept: application/json
 
 Upstream TTS request (non‑stream)
 - Endpoint: `POST https://api.elevenlabs.io/v1/text-to-speech/{voice_id}?output_format=mp3_44100_128`
-- Headers: `xi-api-key: <ELEVENLABS_API_KEY>`, `Content-Type: application/json`
+- Headers: `xi-api-key: <ELEVEN_LABS_API_KEY>`, `Content-Type: application/json`
 - Body:
 ```json
 { "text": "Final answer", "model_id": "eleven_multilingual_v2" }
@@ -147,7 +147,7 @@ Upstream TTS request (non‑stream)
 - Response: MP3 bytes. Default `output_format` is `mp3_44100_128` (44.1 kHz, 128 kbps). `optimize_streaming_latency` is for streaming endpoints and is not used in v1.
 
 Config & privacy
-- `ELEVENLABS_API_KEY` (secret), `VOICE_ID_DEFAULT` (optional per‑language voice mapping)
+- `ELEVEN_LABS_API_KEY` (secret), `ELEVEN_LABS_VOICE_ID` (optional, default: `56AoDkrOh6qfVPDXZ7Pt`)
 - Generated audio is not persisted or logged; only final text is stored per normal logging rules.
 
 ## 9) Logging

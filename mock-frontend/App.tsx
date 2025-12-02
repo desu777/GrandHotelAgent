@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import TopBar from './components/TopBar';
 import InputArea from './components/InputArea';
 import VoiceOverlay from './components/VoiceOverlay';
@@ -27,6 +27,18 @@ const App: React.FC = () => {
     resetSession();
     setMessages([]);
   };
+
+  // Handler for voice mode responses
+  const handleVoiceReply = useCallback((text: string) => {
+    const botMsg: Message = {
+      id: crypto.randomUUID(),
+      role: 'model',
+      text,
+      timestamp: Date.now(),
+    };
+    setMessages((prev) => [...prev, botMsg]);
+    logger.info('App', 'Voice reply added to messages', { textLength: text.length });
+  }, []);
 
   const handleSendMessage = async (text: string) => {
     const userMsg: Message = {
@@ -69,7 +81,11 @@ const App: React.FC = () => {
     <div className="flex h-screen w-screen bg-[#212121] text-[#ececec] overflow-hidden relative font-sans selection:bg-white/20">
       
       {/* Voice Mode Overlay */}
-      <VoiceOverlay isOpen={isVoiceModeOpen} onClose={() => setIsVoiceModeOpen(false)} />
+      <VoiceOverlay
+        isOpen={isVoiceModeOpen}
+        onClose={() => setIsVoiceModeOpen(false)}
+        onNewMessage={handleVoiceReply}
+      />
 
       {/* Top Navigation */}
       <TopBar currentModel={currentModel} onNewSession={handleNewSession} />

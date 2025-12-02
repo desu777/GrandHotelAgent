@@ -26,3 +26,8 @@ RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "30"))
 # Logging
 APP_ENV = os.getenv("APP_ENV", "development")  # development / production
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG" if APP_ENV == "development" else "INFO")
+
+# ElevenLabs TTS
+ELEVEN_LABS_API_KEY = os.getenv("ELEVEN_LABS_API_KEY")
+ELEVEN_LABS_MODEL_ID = os.getenv("ELEVEN_LABS_MODEL_ID", "eleven_flash_v2_5")
+ELEVEN_LABS_VOICE_ID = os.getenv("ELEVEN_LABS_VOICE_ID", "56AoDkrOh6qfVPDXZ7Pt")

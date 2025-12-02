@@ -12,10 +12,15 @@ export enum ChatModel {
 
 // --- Agent API Types ---
 
+export interface AudioPayload {
+  mimeType: string;
+  data: string; // base64
+}
+
 export interface AgentChatRequest {
   sessionId: string;
-  message: string;
-  audio?: null;
+  message?: string;
+  audio?: AudioPayload;
   voiceMode: boolean;
   client?: { traceId: string };
 }
