@@ -3,8 +3,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import TopBar from './components/TopBar';
 import InputArea from './components/InputArea';
 import VoiceOverlay from './components/VoiceOverlay';
+import { MarkdownMessage } from './components/MarkdownMessage';
 import { Message, ChatModel } from './types';
-import { sendMessageToGemini } from './services/geminiService';
+import { sendMessageToGemini, resetSession } from './services/geminiService';
+import { logger } from './services/logger';
 import { Loader2 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -20,6 +22,11 @@ const App: React.FC = () => {
   }, [messages, isLoading]);
 
   const isLandingPage = messages.length === 0;
+
+  const handleNewSession = () => {
+    resetSession();
+    setMessages([]);
+  };
 
   const handleSendMessage = async (text: string) => {
     const userMsg: Message = {
@@ -41,7 +48,7 @@ const App: React.FC = () => {
         };
         setMessages((prev) => [...prev, botMsg]);
     } catch (e) {
-        console.error(e);
+        logger.error('App', 'Unexpected error in handleSendMessage', { error: e });
     } finally {
         setIsLoading(false);
     }
@@ -65,7 +72,7 @@ const App: React.FC = () => {
       <VoiceOverlay isOpen={isVoiceModeOpen} onClose={() => setIsVoiceModeOpen(false)} />
 
       {/* Top Navigation */}
-      <TopBar currentModel={currentModel} />
+      <TopBar currentModel={currentModel} onNewSession={handleNewSession} />
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col items-center w-full h-full relative z-10">
@@ -117,11 +124,15 @@ const App: React.FC = () => {
                              <div className="hidden sm:block w-8 flex-shrink-0" /> 
                         )}
                         <div className={`max-w-[85%] text-lg font-light leading-relaxed ${
-                            msg.role === 'user' 
-                            ? 'bg-[#303030] text-gray-100 px-6 py-4 rounded-3xl rounded-tr-sm' 
-                            : 'text-gray-200 px-0 py-1' 
+                            msg.role === 'user'
+                            ? 'bg-[#303030] text-gray-100 px-6 py-4 rounded-3xl rounded-tr-sm'
+                            : 'text-gray-200 px-0 py-1'
                         }`}>
-                            {msg.text}
+                            {msg.role === 'model' ? (
+                                <MarkdownMessage content={msg.text} />
+                            ) : (
+                                msg.text
+                            )}
                         </div>
                     </div>
                 ))}

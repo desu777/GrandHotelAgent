@@ -1,0 +1,20 @@
+services:
+  mock-frontend:
+    build:
+      context: .
+      args:
+        # Browser calls agent via localhost (exposed port from agent container)
+        VITE_AGENT_API_BASE_URL: ${VITE_AGENT_API_BASE_URL:-http://localhost:8000}
+        VITE_AGENT_JWT: ${VITE_AGENT_JWT:-mock-jwt-token}
+        VITE_LOG_LEVEL: ${VITE_LOG_LEVEL:-debug}
+    image: grandhotel-frontend:dev
+    container_name: grandhotel-frontend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks:
+      - grandhotel-network
+
+networks:
+  grandhotel-network:
+    external: true

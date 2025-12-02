@@ -16,7 +16,7 @@ const InputArea: React.FC<InputAreaProps> = ({ onSendMessage, isLoading, onVoice
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
     }
   }, [input]);
 
@@ -35,7 +35,7 @@ const InputArea: React.FC<InputAreaProps> = ({ onSendMessage, isLoading, onVoice
       <div className={`bg-[#303030] rounded-[26px] p-3 relative shadow-2xl border border-[#424242]/50 transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
         
         {/* Input Wrapper */}
-        <div className="flex flex-col min-h-[52px]">
+        <div className="flex flex-col min-h-[44px]">
           <textarea
             ref={textareaRef}
             value={input}
@@ -43,7 +43,7 @@ const InputArea: React.FC<InputAreaProps> = ({ onSendMessage, isLoading, onVoice
             onKeyDown={handleKeyDown}
             disabled={isLoading}
             placeholder="W czym mogę pomóc?"
-            className="w-full bg-transparent text-[#ececec] placeholder-gray-500 resize-none outline-none text-lg px-2 py-3 max-h-[200px] overflow-y-auto scrollbar-hide disabled:cursor-not-allowed font-light"
+            className="w-full bg-transparent text-[#ececec] placeholder-gray-500 resize-none outline-none text-base px-2 py-2 max-h-[120px] overflow-y-auto scrollbar-hide disabled:cursor-not-allowed font-light"
             rows={1}
           />
         </div>
